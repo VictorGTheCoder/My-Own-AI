@@ -4,7 +4,7 @@ NAME = NeuralNetwork
 OBJDIR = obj
 
 # Sources
-SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp)
+SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp ActivationFunction.cpp utils.cpp Data.cpp Cost.cpp)
 
 # Object files
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
@@ -27,7 +27,7 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -fsanitize=address -o $(NAME)
 
 # Standard rules
-all: create_obj_dir $(NAME)
+all: $(NAME)
 
 clean:
 	$(RM) -r $(OBJDIR)
