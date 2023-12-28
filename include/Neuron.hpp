@@ -1,17 +1,25 @@
+#ifndef NEURON_HPP
+#define NEURON_HPP
+
+
 #include <iostream>
 #include <vector>
 #include <cmath>
 
+class Connection;
 
-class Node
+class Neuron
 {
 	private:
 		double _output;
+		std::vector<Connection*> _connections;
 		
 	public:
-		Node();
-		~Node();
+		Neuron();
+		~Neuron();
 		void setOutput(double value);
 		double getOutput() const;
 
 };
+
+#endif

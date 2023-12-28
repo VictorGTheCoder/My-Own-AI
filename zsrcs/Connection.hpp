@@ -1,21 +1,23 @@
-#include "Node.hpp"
+
+
+class Neuron;
 
 class Connection
 {
     private:
-        Node* fromNode;
-        Node* toNode;
+        Neuron* fromNeuron;
+        Neuron* toNeuron;
         double _weight;
         double _bias;
 
     public:
-        Connection(Node* from, Node* to);
+        Connection(Neuron* from, Neuron* to);
         void setWeight(double w);
         void setBias(double b);
         void propagate();
 };
 
-Connection::Connection(Node* from, Node* to) : fromNode(from), toNode(to), _weight(0.0), _bias(0.0) {}
+Connection::Connection(Neuron* from, Neuron* to) : fromNeuron(from), toNeuron(to), _weight(0.0), _bias(0.0) {}
 
 void Connection::setWeight(double w) {
     _weight = w;
@@ -26,8 +28,8 @@ void Connection::setBias(double b) {
 }
 
 void Connection::propagate() {
-    double input = fromNode->getOutput();
+    double input = fromNeuron->getOutput();
     double output = (input * _weight) + _bias;
     // Ici, vous pouvez appliquer une fonction d'activation si nécessaire
-    toNode->setOutput(output);
+    toNeuron->setOutput(output);
 }
