@@ -6,13 +6,13 @@
 #include <vector>
 #include <cmath>
 
-class Connection;
+#include "../include/Connection.hpp"
 
 class Neuron
 {
 	private:
 		double _output;
-		std::vector<Connection*> _connections;
+		std::vector<Connection> _connections;
 		
 	public:
 		Neuron();

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-class Neuron;
+#include "../include/Neuron.hpp"
 
 class Layer
 {
