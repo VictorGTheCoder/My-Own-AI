@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream>
 
 struct Data {
 	std::vector<double> input;

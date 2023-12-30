@@ -17,12 +17,14 @@ int main()
 
 
 
-	NN->createNetwork(inputs);
+	NN->createNetwork(dataset);
 
 
 	NN->displayNetwork();
 
-	NN->ForwardPropagation();
+	NN->train();
+
+	//NN->learn();
 
 	NN->displayNetwork();
 

@@ -52,19 +52,19 @@ std::vector<Data> createDataSet()
 		Data data1;
 		data1.input.push_back(PetalLength1[i]);
 		data1.input.push_back(PetalWidth1[i]);
-		data1.expectedOutput.push_back(1.0);
+		data1.expectedOutput = {1.0, 0.0, 0.0};
 		dataSet.push_back(data1);
 
 		Data data2;
 		data2.input.push_back(PetalLength2[i]);
 		data2.input.push_back(PetalWidth2[i]);
-		data2.expectedOutput.push_back(2.0);
+		data2.expectedOutput = {0.0, 1.0, 0.0};
 		dataSet.push_back(data2);
 
 		Data data3;
 		data3.input.push_back(PetalLength3[i]);
 		data3.input.push_back(PetalWidth3[i]);
-		data3.expectedOutput.push_back(3.0);
+		data3.expectedOutput = {0.0, 0.0, 1.0};
 		dataSet.push_back(data3);
 	}
 	return dataSet;

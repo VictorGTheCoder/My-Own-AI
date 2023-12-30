@@ -21,6 +21,7 @@ class Neuron
 		void setOutput(double value);
 		double getOutput() const;
 		void setConnection(Neuron* neuron);
+		std::vector<Connection *> getConnections() const;
 		void displayNeuron();
 		void computeOutput();
 

@@ -3,15 +3,15 @@
 
 #include <vector>
 #include "../include/Layer.hpp"
-#include "../include/Data.hpp"
 #include "../include/Color.hpp"
+#include "../include/Cost.hpp"
 
 class NeuralNetwork
 {
     public:
         NeuralNetwork(const std::vector<int>& layerSizes);
         ~NeuralNetwork();
-        void createNetwork(std::vector<double> inputs);
+        void createNetwork(std::vector<Data> dataset);
         void displayNetwork();
         void setInputLayer(std::vector<double> inputs);
 
@@ -19,10 +19,13 @@ class NeuralNetwork
         void ForwardPropagation();
         void BackwarPropagation();
 
+        void learn();
         void train();
         // Other methods like train, predict, saveModel, loadModel, etc.
 
     private:
+        double _learningRate;
+        std::vector<Data> _dataset;
         std::vector<double> _inputs;
         Layer* _inputLayer;
         std::vector<Layer *> _layers;

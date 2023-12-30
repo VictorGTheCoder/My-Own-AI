@@ -10,6 +10,8 @@ void Neuron::setOutput(double output) {_output = output;}
 
 double Neuron::getOutput() const {return _output;}
 
+std::vector<Connection *> Neuron::getConnections() const {return _connections;}
+
 void Neuron::setConnection(Neuron* neuron) {
 	_connections.push_back(new Connection(neuron, this));
 }
@@ -31,5 +33,4 @@ void Neuron::computeOutput() {
 		temp += connection->computeConnection();
 	}
 	_output = ActivationFunctionSigmoid(temp);
-	//std::cout << COLOR_MAGENTA << _output << COLOR_RESET << std::endl;
 }
