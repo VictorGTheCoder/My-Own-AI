@@ -4,7 +4,7 @@
 
 
 
-Connection::Connection(Neuron* from, Neuron* to) : fromNeuron(from), toNeuron(to), _weight(generateRandomNumber()), _bias(0.0)
+Connection::Connection(Neuron* from, Neuron* to) : fromNeuron(from), toNeuron(to), _weight(generateRandomNumber())
 {/*std::cout << "Connection constructor called" << std::endl;*/}
 
 Connection::~Connection()
@@ -14,16 +14,12 @@ void Connection::setWeight(double w){
     _weight = w;
 }
 
-void Connection::setBias(double b){
-    _bias = b;
-}
 
 double Connection::getWeight() const {return _weight;}
-double Connection::getBias() const {return _bias;}
 
 double Connection::computeConnection() {
     double input = fromNeuron->getOutput();
-    double output = (input * _weight) + _bias;
+    double output = (input * _weight);
     
     return output;
 }

@@ -31,7 +31,6 @@ void Layer::displayLayer() {
 		neuron->displayNeuron();
 		std::cout << "-------------" << std::endl;
 	}
-
 }
 
 std::vector<Neuron *> Layer::getNeurons() const {return _Neurons;}

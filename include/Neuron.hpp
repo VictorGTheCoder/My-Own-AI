@@ -13,6 +13,7 @@ class Neuron
 {
 	private:
 		double _output;
+		double _bias;
 		std::vector<Connection*> _connections;
 		
 	public:
@@ -20,6 +21,9 @@ class Neuron
 		~Neuron();
 		void setOutput(double value);
 		double getOutput() const;
+        void setBias(double b);
+        double getBias() const;
+
 		void setConnection(Neuron* neuron);
 		std::vector<Connection *> getConnections() const;
 		void displayNeuron();

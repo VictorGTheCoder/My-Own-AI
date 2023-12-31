@@ -13,15 +13,12 @@ class Connection
         Neuron *fromNeuron;
         Neuron *toNeuron;
         double _weight;
-        double _bias;
 
     public:
         Connection(Neuron* from, Neuron* to);
         ~Connection();
         void setWeight(double w);
-        void setBias(double b);
         double getWeight() const;
-        double getBias() const;
         double computeConnection();
 };
 

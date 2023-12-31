@@ -17,6 +17,16 @@ double DataCost(std::vector<Data> data) {
 	return cost / data.size();
 }
 
+double DataCost2(std::vector<Data> data, std::vector<double> output) {
+	double cost = 0.0;
+	for (long unsigned int i = 0; i < data.size(); i++) {
+		for (long unsigned int j = 0; j < data[i].expectedOutput.size(); j++) {
+			cost += NodeCost(output[j], data[i].expectedOutput[j]);
+			//std::cout << "Cost calculated: " << data[i].calculatedOutput[j] << " Expected " << data[i].expectedOutput[j] << std::endl;
+		}
+	}
+	return cost / data.size();
+}
 
 double ActualCost(std::vector<Data> data, std::vector<double> output) {
 	double cost = 0.0;

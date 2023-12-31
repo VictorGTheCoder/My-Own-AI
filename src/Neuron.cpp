@@ -2,7 +2,7 @@
 #include "../include/Connection.hpp"
 #include "../include/Color.hpp"
 
-Neuron::Neuron() : _output(0.0) {/*std::cout << "Neuron constructor called" << std::endl;*/}
+Neuron::Neuron() : _output(0.0), _bias(0.0) {/*std::cout << "Neuron constructor called" << std::endl;*/}
 
 Neuron::~Neuron() {/*std::cout << "Neuron destructor called" << std::endl;*/ for (Connection *connection : _connections) delete connection;}
 
@@ -16,10 +16,17 @@ void Neuron::setConnection(Neuron* neuron) {
 	_connections.push_back(new Connection(neuron, this));
 }
 
+
+void Neuron::setBias(double b){
+    _bias = b;
+}
+double Neuron::getBias() const {return _bias;}
+
+
 void Neuron::displayNeuron() {
 	std::cout << COLOR_BRIGHT_YELLOW << "Neuron output : " << COLOR_RED << _output << COLOR_RESET << std::endl;
 	for (Connection *connection : _connections) {
-		std::cout << COLOR_BRIGHT_YELLOW << "Connection " << COLOR_BLUE << "weight" << COLOR_YELLOW << " / " << COLOR_CYAN << "bias" <<  COLOR_BRIGHT_YELLOW << " : " << COLOR_BLUE << connection->getWeight() << COLOR_BRIGHT_YELLOW <<  " / " << COLOR_CYAN << connection->getBias() << COLOR_RESET << std::endl;
+		std::cout << COLOR_BRIGHT_YELLOW << "Connection " << COLOR_BLUE << "weight" << COLOR_YELLOW << " / " << COLOR_CYAN << "bias" <<  COLOR_BRIGHT_YELLOW << " : " << COLOR_BLUE << connection->getWeight() << COLOR_BRIGHT_YELLOW <<  " / " << COLOR_CYAN << this->getBias() << COLOR_RESET << std::endl;
 	}
 }
 
@@ -32,5 +39,6 @@ void Neuron::computeOutput() {
 	for (Connection *connection : _connections) {
 		temp += connection->computeConnection();
 	}
+	temp += _bias;
 	_output = ActivationFunctionSigmoid(temp);
 }
