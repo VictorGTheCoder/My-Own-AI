@@ -71,114 +71,87 @@ void NeuralNetwork::BackwarPropagation() {
 
 
 void NeuralNetwork::learn() {
-    const double h = 0.0001;
-    std::vector<double> calculatedOutputs;
+
+    setInputLayer(_currentData->input);
     ForwardPropagation();
-    for (Neuron *neuron2 : _outputLayer->getNeurons())
+    double cost = DataCost(_currentData, getOutputValues());
+    std::cout << "Cost " << cost << std::endl;
+    (void) cost;
+    BackwarPropagation();
+}
+
+
+void NeuralNetwork::train() {
+    int numBatches = _dataset.size() / BATCH_SIZE;
+
+    for (int epoch = 0; epoch < NUM_EPOCHS; epoch++)
     {
-        calculatedOutputs.push_back(neuron2->getOutput());
-    }
-    double originalCost = DataCost2(_dataset, calculatedOutputs);
-    double deltaCost;
-    std::cout << "Original cost : " << originalCost << std::endl;
-
-    double gradientWeightAvg = 0.0;
-    double gradientBiasAvg = 0.0;
-
-
-    for (int i = _layers.size() - 1; i >= 0; i--)
-    {
-        for (Neuron *neuron : _layers[i]->getNeurons())
+        //ShuffleDataset(_dataset);
+        for (int batch = 0; batch < numBatches; batch++)
         {
-            for (Connection *connection : neuron->getConnections())
+            std::vector<Data> miniBatch = GetMiniBatch(_dataset, batch, BATCH_SIZE);
+
+            for (Data &data : miniBatch)
             {
-                double originalWeight = connection->getWeight();
-                connection->setWeight(originalWeight + h);
-                ForwardPropagation();
-                for (Neuron *neuron2 : _outputLayer->getNeurons())
-                {
-                    calculatedOutputs.push_back(neuron2->getOutput());
-                }
-                deltaCost = DataCost2(_dataset, calculatedOutputs) - originalCost;
-                calculatedOutputs.clear();
-
-                std::cout << "DeltaCost " << deltaCost << std::endl;
-                connection->setWeight(originalWeight);
-                double gradientWeight = deltaCost / h;
-
-
-
-                double originalBias = neuron->getBias();
-                neuron->setBias(originalBias + h);
-                ForwardPropagation();
-                for (Neuron *neuron2 : _outputLayer->getNeurons())
-                {
-                    calculatedOutputs.push_back(neuron2->getOutput());
-                }
-                deltaCost = DataCost2(_dataset, calculatedOutputs) - originalCost;
-                calculatedOutputs.clear();
-
-
-                neuron->setBias(originalBias);
-                double gradientBias = deltaCost / h;
-
-
-                //std::cout << "GradientWeight: " << gradientWeight << ", Gradient Bias: " << gradientBias << std::endl;
-                gradientWeightAvg += (originalWeight - _learningRate * gradientWeight);
-                gradientBiasAvg += (originalBias - _learningRate * gradientBias);
-
+                for (double t : data.input)
+                    std::cout << t << ", ";
+                std::cout << std::endl;
+                _currentData = &data;
+                learn();
             }
         }
     }
-    int i = 0;
-    for (Layer *layer : _layers)
-    {
-        for (Neuron *neuron : layer->getNeurons())
-        {
-            for (Connection *connection : neuron->getConnections())
-            {
 
-                connection->setWeight(connection->getWeight() + gradientWeightAvg);
-                neuron->setBias(neuron->getBias() + gradientBiasAvg);
-                i++;
-            }
-        }
 
-    }
-
+    
 
 }
 
+std::vector<double> NeuralNetwork::getOutputValues()
+{
+    std::vector<double> result;
+    for (Neuron *neuron : _outputLayer->getNeurons())
+    {
+        result.push_back(neuron->getOutput());
+    }
+    return result;
+}
+
+
+std::vector<Data> NeuralNetwork::GetMiniBatch(const std::vector<Data>& dataset, int batchNumber, int batchSize) {
+    std::vector<Data> miniBatch;
+    int startIdx = batchNumber * batchSize;
+    int endIdx = std::min(startIdx + batchSize, static_cast<int>(dataset.size()));
+
+    for (int i = startIdx; i < endIdx; ++i) {
+        miniBatch.push_back(dataset[i]);
+    }
+
+    return miniBatch;
+}
+
+
+void NeuralNetwork::ShuffleDataset(std::vector<Data>& dataset) {
+    // Obtain a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    // Shuffle using the default random engine
+    std::shuffle(dataset.begin(), dataset.end(), std::default_random_engine(seed));
+}
 
 void NeuralNetwork::updateDataset()
 {
-    for (std::size_t i = 0; i < _dataset.size(); ++i)
-    {
-        setInputLayer(_dataset[i].input);
-
-        ForwardPropagation();
-        Layer *lastLayer = _layers[_layers.size() - 1];
-        std::vector<double> calculatedOutputs;
-        for (Neuron *neuron : lastLayer->getNeurons())
-        {
-            calculatedOutputs.push_back(neuron->getOutput());
-        }
-        _dataset[i].calculatedOutput = calculatedOutputs;
-    }
-}
-
-void NeuralNetwork::train() {
-    
-    // std::vector<double> calculatedOutputs;
-    // for (Neuron *neuron2 : _outputLayer->getNeurons())
+    // for (std::size_t i = 0; i < _dataset.size(); ++i)
     // {
-    //     calculatedOutputs.push_back(neuron2->getOutput());
+    //     setInputLayer(_dataset[i].input);
+
+    //     ForwardPropagation();
+    //     Layer *lastLayer = _layers[_layers.size() - 1];
+    //     std::vector<double> calculatedOutputs;
+    //     for (Neuron *neuron : lastLayer->getNeurons())
+    //     {
+    //         calculatedOutputs.push_back(neuron->getOutput());
+    //     }
+    //     _dataset[i].calculatedOutput = calculatedOutputs;
     // }
-    // std::cout << "Cost::: " << DataCost2(_dataset, calculatedOutputs) << std::endl;
-
- //   updateDataset();
-    learn();
-
-    
-
 }

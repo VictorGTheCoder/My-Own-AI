@@ -2,9 +2,15 @@
 #define NEURALNETWORK_HPP
 
 #include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono> 
 #include "../include/Layer.hpp"
 #include "../include/Color.hpp"
 #include "../include/Cost.hpp"
+
+#define BATCH_SIZE 5
+#define NUM_EPOCHS 1
 
 class NeuralNetwork
 {
@@ -14,8 +20,6 @@ class NeuralNetwork
         
         void createNetwork(std::vector<Data> dataset);
         void setInputLayer(std::vector<double> inputs);
-        void updateDataset();
-
 
         void ForwardPropagation();
         void BackwarPropagation();
@@ -26,12 +30,23 @@ class NeuralNetwork
 
         void displayNetwork();
         void displayLastLayer();
-        // Other methods like train, predict, saveModel, loadModel, etc.
+
+
+        std::vector<Data> GetMiniBatch(const std::vector<Data>& dataset, int batchNumber, int batchSize);
+
+
+        std::vector<double> getOutputValues();
+
+
+
+        void ShuffleDataset(std::vector<Data> &dataset);
+        void updateDataset();
+
 
     private:
         double _learningRate;
         std::vector<Data> _dataset;
-        Data *currentData;
+        Data *_currentData;
         std::vector<double> _inputs;
         Layer* _inputLayer;
         Layer* _outputLayer;
