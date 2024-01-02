@@ -8,6 +8,5 @@ double generateRandomNumber() {
 
     // Generate and output a random number
     double random_number = distr(gen);
-    (void ) random_number;
-    return 0.45;
+    return random_number;
 }

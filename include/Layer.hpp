@@ -23,6 +23,8 @@ class Layer
         std::vector<Neuron *> getNeurons() const;
         int getSize() const;
 
+
+        void updateWeights(double learningRate);
         // void setNeurons(std::vector<Neuron *> neurons);
         // void setSize(int size);
 

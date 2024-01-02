@@ -46,3 +46,12 @@ void Layer::ComputeOutputs() {
 	}
 }
 
+void Layer::updateWeights(double learningRate)
+{
+	for (Neuron* neuron : _Neurons)
+	{
+		
+		neuron->updateWeights(learningRate);
+	}
+}
+

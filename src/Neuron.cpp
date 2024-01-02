@@ -42,3 +42,28 @@ void Neuron::computeOutput() {
 	temp += _bias;
 	_output = ActivationFunctionSigmoid(temp);
 }
+
+
+void Neuron::setDelta(double value) {
+    _delta = value;
+}
+
+double Neuron::getDelta() const {
+    return _delta;
+}
+
+void Neuron::updateWeights(double learningRate) {
+    for (Connection *connection : _connections) {
+        double newWeight = connection->getWeight() - learningRate * _delta * connection->fromNeuron->getOutput();
+        connection->setWeight(newWeight);
+    }
+    _bias -= learningRate * _delta;
+}
+
+std::vector<double> Neuron::getWeights() const {
+	std::vector<double> weights;
+	for (const auto& connection : _connections) {
+		weights.push_back(connection->getWeight());
+	}
+	return weights;
+}

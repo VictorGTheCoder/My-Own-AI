@@ -10,11 +10,11 @@ class Neuron;
 class Connection
 {
     private:
-        Neuron *fromNeuron;
-        Neuron *toNeuron;
         double _weight;
 
     public:
+        Neuron *fromNeuron;
+        Neuron *toNeuron;
         Connection(Neuron* from, Neuron* to);
         ~Connection();
         void setWeight(double w);

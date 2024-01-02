@@ -13,7 +13,7 @@ double DataCost(Data *data, std::vector<double> output)
 	{
 		result += NodeCost(output[i], data->expectedOutput[i]);
 	}
-	return (result);
+	return (result / output.size());
 }
 
 // double DataCost(std::vector<Data> data) {

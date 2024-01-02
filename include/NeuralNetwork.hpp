@@ -8,9 +8,10 @@
 #include "../include/Layer.hpp"
 #include "../include/Color.hpp"
 #include "../include/Cost.hpp"
+#include "../include/ActivationFunction.hpp"
 
-#define BATCH_SIZE 5
-#define NUM_EPOCHS 1
+#define BATCH_SIZE 10
+#define NUM_EPOCHS 20
 
 class NeuralNetwork
 {
@@ -21,12 +22,14 @@ class NeuralNetwork
         void createNetwork(std::vector<Data> dataset);
         void setInputLayer(std::vector<double> inputs);
 
-        void ForwardPropagation();
-        void BackwarPropagation();
+        void forwardPropagation();
+        void backwarPropagation();
 
         void learn();
         void train();
 
+        int predictData(Data data);
+        void predictDataSet(std::vector<Data> dataset);
 
         void displayNetwork();
         void displayLastLayer();

@@ -4,8 +4,11 @@
 
 
 
-Connection::Connection(Neuron* from, Neuron* to) : fromNeuron(from), toNeuron(to), _weight(generateRandomNumber())
-{/*std::cout << "Connection constructor called" << std::endl;*/}
+Connection::Connection(Neuron* from, Neuron* to) : _weight(generateRandomNumber())
+{
+    fromNeuron = from;
+    toNeuron = to;
+}
 
 Connection::~Connection()
 {/*std::cout << "Connection destructor called" << std::endl;*/}
