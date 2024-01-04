@@ -61,11 +61,11 @@ std::vector<Data> createDataSet()
 		data2.expectedOutput = {0.0, 1.0, 0.0};
 		dataSet.push_back(data2);
 
-		Data data3;
-		data3.input.push_back(PetalLength3[i]);
-		data3.input.push_back(PetalWidth3[i]);
-		data3.expectedOutput = {0.0, 0.0, 1.0};
-		dataSet.push_back(data3);
+		// Data data3;
+		// data3.input.push_back(PetalLength3[i]);
+		// data3.input.push_back(PetalWidth3[i]);
+		// data3.expectedOutput = {0.0, 0.0, 1.0};
+		// dataSet.push_back(data3);
 	}
 	return dataSet;
 }

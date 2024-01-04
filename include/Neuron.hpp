@@ -14,7 +14,7 @@ class Neuron
 	private:
 		double _output;
 		double _bias;
-		double _delta;
+		double _gradients;
 		std::vector<Connection*> _connections;
 		
 	public:
@@ -28,8 +28,8 @@ class Neuron
         void setBias(double b);
         double getBias() const;
 
-		void setDelta(double value);
-		double getDelta() const;
+		void setGradients(double value);
+		double getGradients() const;
 
 		std::vector<double> getWeights() const;
 

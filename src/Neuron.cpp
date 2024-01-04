@@ -44,25 +44,26 @@ void Neuron::computeOutput() {
 }
 
 
-void Neuron::setDelta(double value) {
-    _delta = value;
+void Neuron::setGradients(double value) {
+    _gradients = value;
 }
 
-double Neuron::getDelta() const {
-    return _delta;
+double Neuron::getGradients() const {
+    return _gradients;
 }
 
 void Neuron::updateWeights(double learningRate) {
     for (Connection *connection : _connections) {
-        double newWeight = connection->getWeight() - learningRate * _delta * connection->fromNeuron->getOutput();
+        double newWeight = connection->getWeight() - learningRate * _gradients * connection->fromNeuron->getOutput();
         connection->setWeight(newWeight);
     }
-    _bias -= learningRate * _delta;
+    _bias -= learningRate * _gradients;
+	_gradients = 0;
 }
 
 std::vector<double> Neuron::getWeights() const {
 	std::vector<double> weights;
-	for (const auto& connection : _connections) {
+	for (Connection *connection : _connections) {
 		weights.push_back(connection->getWeight());
 	}
 	return weights;

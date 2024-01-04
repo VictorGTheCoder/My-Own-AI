@@ -6,11 +6,11 @@ Layer::Layer(int numberOfNeurons) : _size(numberOfNeurons) {
     for (int i = 0; i < numberOfNeurons; ++i) {
         _Neurons.push_back(new Neuron());
     }
-	std::cout << "Layer constructor called and create " << numberOfNeurons << " neurons\n" << std::endl;
+	//std::cout << "Layer constructor called and create " << numberOfNeurons << " neurons\n" << std::endl;
 }
 
 Layer::~Layer() {
-	std::cout << "Layer destructor called" << std::endl;
+	//std::cout << "Layer destructor called" << std::endl;
 	for (Neuron *neuron : _Neurons)
 		delete neuron;
 }

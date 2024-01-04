@@ -4,7 +4,7 @@
 
 NeuralNetwork::NeuralNetwork(const std::vector<int>& layerSizes) : _layerSizes(layerSizes){
     std::cout << "NeuralNetwork constructor called : ";
-    _learningRate = 0.05;
+    _learningRate = 0.1;
     for (int t : _layerSizes)
         std::cout << t << " ";
     std::cout << std::endl;
@@ -14,7 +14,7 @@ NeuralNetwork::~NeuralNetwork() {
     for (Layer *layer : _layers)
         delete layer;
     delete _inputLayer;
-    std::cout << "NeuralNetwork destructor called" << std::endl;
+    //std::cout << "NeuralNetwork destructor called" << std::endl;
 }
 
 void NeuralNetwork::createNetwork(std::vector<Data> dataset) {
@@ -67,6 +67,16 @@ void NeuralNetwork::forwardPropagation() {
 
 void NeuralNetwork::backwarPropagation() {
 
+    if (_outputLayer->getNeurons()[0]->getOutput() > _outputLayer->getNeurons()[1]->getOutput())
+    {
+        if (_currentData->expectedOutput[0] == 1)
+            _currentTrainingSuccess++;
+    }
+    else
+    {
+        if (_currentData->expectedOutput[1] == 1)
+            _currentTrainingSuccess++;
+    }
     std::vector<double> delta_errors;
     for (std::size_t i = 0; i < _outputLayer->getNeurons().size(); ++i)
     {
@@ -76,7 +86,7 @@ void NeuralNetwork::backwarPropagation() {
         double delta = error * ActivationFunctionSigmoidDerivative(output);
 
         delta_errors.push_back(delta);
-        _outputLayer->getNeurons()[i]->setDelta(delta);
+        _outputLayer->getNeurons()[i]->setGradients(delta + _outputLayer->getNeurons()[i]->getGradients());
     }
 
     for (int i = _layers.size() - 2; i >= 0; i--) // start from the last hidden layer
@@ -89,32 +99,14 @@ void NeuralNetwork::backwarPropagation() {
             double sum = 0.0;
             for (std::size_t k = 0; k < nextLayer->getNeurons().size(); k++)
             {
-                sum += nextLayer->getNeurons()[k]->getWeights()[j] * nextLayer->getNeurons()[k]->getDelta();
+                sum += nextLayer->getNeurons()[k]->getWeights()[j] * nextLayer->getNeurons()[k]->getGradients();
             }
 
             double output = layer->getNeurons()[j]->getOutput();
             double delta = sum * ActivationFunctionSigmoidDerivative(output);
-            layer->getNeurons()[j]->setDelta(delta);
+            layer->getNeurons()[j]->setGradients(delta + layer->getNeurons()[j]->getGradients());
         }
     }
-
-    for (Layer *layer : _layers)
-    {
-        layer->updateWeights(_learningRate);
-    }
-    // std::vector<double> delta_errors;
-    // for (std::size_t i = 0; i < _outputLayer->getNeurons().size(); ++i)
-    // {
-    //     delta_errors.push_back(_outputLayer->getNeurons()[i]->getOutput() - _currentData->expectedOutput[i]);
-    // }
-    
-    // for (std::size_t i = _layers.size() - 1; i >= 0; i--)
-    // {
-    //     for (std::size_t j = 0; j < _layers[i]->getNeurons().size(); j++)
-    //     {
-             
-    //     }
-    // }
 }
 
 
@@ -127,9 +119,13 @@ void NeuralNetwork::learn() {
 
 
 void NeuralNetwork::train() {
+    _currentTrainingSuccess = 0;
     int numBatches = _dataset.size() / BATCH_SIZE;
 
-    for (int epoch = 0; epoch < NUM_EPOCHS; epoch++)
+    // for (int epoch = 0; epoch < NUM_EPOCHS; epoch++)
+    // {
+
+    while (true)
     {
         ShuffleDataset(_dataset);
         for (int batch = 0; batch < numBatches; batch++)
@@ -145,10 +141,41 @@ void NeuralNetwork::train() {
                 setInputLayer(_currentData->input);
                 learn();
             }
+            for (Layer *layer : _layers)
+            {
+                layer->updateWeights(-_learningRate / miniBatch.size());
+            }
+
+        }
+        if (_currentTrainingSuccess == (int)_dataset.size())
+        {
+            std::cout << "Success : " << _currentTrainingSuccess << "/" << _dataset.size() << std::endl;
+            break;
         }
     }
 }
 
+
+int NeuralNetwork::predict(std::vector<double> inputs) {
+    setInputLayer(inputs);
+    forwardPropagation();
+    std::vector<double> calculatedOutputs;
+    for (Neuron *neuron : _outputLayer->getNeurons())
+    {
+        calculatedOutputs.push_back(neuron->getOutput());
+    }
+    // for (double t : calculatedOutputs)
+    //     std::cout << t << ", ";
+    // std::cout << std::endl;
+    if (calculatedOutputs[0] > calculatedOutputs[1])
+        return (1);
+    else 
+        return (2);
+    // else if (calculatedOutputs[1] > calculatedOutputs[0] && calculatedOutputs[1] > calculatedOutputs[2])
+    //     return (2);
+    // else
+    //     return (3);
+}
 
 int NeuralNetwork::predictData(Data data)
 {
@@ -160,16 +187,18 @@ int NeuralNetwork::predictData(Data data)
     {
         calculatedOutputs.push_back(neuron->getOutput());
     }
-    for (double t : calculatedOutputs)
-        std::cout << t << ", ";
+    // for (double t : calculatedOutputs)
+    //     std::cout << t << ", ";
     
 
-    if (calculatedOutputs[0] > calculatedOutputs[1] && calculatedOutputs[0] > calculatedOutputs[2])
+    if (calculatedOutputs[0] > calculatedOutputs[1])
         return (1);
-    else if (calculatedOutputs[1] > calculatedOutputs[0] && calculatedOutputs[1] > calculatedOutputs[2])
+    else 
         return (2);
-    else
-        return (3);
+    // else if (calculatedOutputs[1] > calculatedOutputs[0] && calculatedOutputs[1] > calculatedOutputs[2])
+    //     return (2);
+    // else
+    //     return (3);
 
 }
 
@@ -188,10 +217,11 @@ void NeuralNetwork::predictDataSet(std::vector<Data> dataset)
         else
             rr = 3;
         if (r != rr)
-            std::cout << "Expected : " << rr << " Predicted : " << r << " " << COLOR_RED << "KO" << COLOR_RESET << std::endl;
+            continue;
+            //std::cout << "Expected : " << rr << " Predicted : " << r << " " << COLOR_RED << "KO" << COLOR_RESET << std::endl;
         else
         {
-            std::cout << "Expected : " << rr << " Predicted : " << r << " " << COLOR_GREEN << "OK" << COLOR_RESET << std::endl;
+            //std::cout << "Expected : " << rr << " Predicted : " << r << " " << COLOR_GREEN << "OK" << COLOR_RESET << std::endl;
             success++;
         }
     }
@@ -203,7 +233,7 @@ std::vector<double> NeuralNetwork::getOutputValues()
     std::vector<double> result;
     for (Neuron *neuron : _outputLayer->getNeurons())
     {
-        result.push_back(neuron->getOutput());
+        result.push_back(neuron->getOutput() * 100);
     }
     return result;
 }

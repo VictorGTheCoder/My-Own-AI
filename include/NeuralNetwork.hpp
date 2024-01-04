@@ -10,8 +10,8 @@
 #include "../include/Cost.hpp"
 #include "../include/ActivationFunction.hpp"
 
-#define BATCH_SIZE 10
-#define NUM_EPOCHS 20
+#define BATCH_SIZE 1
+#define NUM_EPOCHS 5
 
 class NeuralNetwork
 {
@@ -28,6 +28,7 @@ class NeuralNetwork
         void learn();
         void train();
 
+        int predict(std::vector<double> inputs);
         int predictData(Data data);
         void predictDataSet(std::vector<Data> dataset);
 
@@ -55,6 +56,7 @@ class NeuralNetwork
         Layer* _outputLayer;
         std::vector<Layer *> _layers;
         std::vector<int> _layerSizes;
+        int _currentTrainingSuccess;
 };
 
 #endif
