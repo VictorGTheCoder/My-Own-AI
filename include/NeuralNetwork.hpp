@@ -11,7 +11,7 @@
 #include "../include/ActivationFunction.hpp"
 
 #define BATCH_SIZE 1
-#define NUM_EPOCHS 5
+#define NUM_EPOCHS 50
 
 class NeuralNetwork
 {
@@ -38,10 +38,9 @@ class NeuralNetwork
 
         std::vector<Data> GetMiniBatch(const std::vector<Data>& dataset, int batchNumber, int batchSize);
 
-
         std::vector<double> getOutputValues();
 
-
+		void updateWeightsAndBias(Layer *layer, const std::vector<double> &deltaErrors);
 
         void ShuffleDataset(std::vector<Data> &dataset);
         void updateDataset();

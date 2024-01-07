@@ -1,5 +1,7 @@
 #include "../include/Connection.hpp"
 #include "../include/Neuron.hpp"
+#include <cstdint>
+
 
 
 

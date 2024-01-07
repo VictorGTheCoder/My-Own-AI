@@ -62,11 +62,10 @@ int main()
 
 	(void ) dataset2;
 
-	std::vector<int> t({5, 4, 2});
+	std::vector<int> t({1, 2});
 	//std::vector<double> inputs({1, 1});
 
 	NeuralNetwork *NN = new NeuralNetwork(t);
-
 
 	NN->createNetwork(dataset);
 
@@ -74,14 +73,17 @@ int main()
 	NN->displayNetwork();
 
 
-	NN->predictDataSet(dataset);
+	//NN->predictDataSet(dataset);
 	//NN->predictData(data);
 
 	NN->train();
 
+
+
+	NN->displayNetwork();
 	//NN->predictData(data);
-	NN->predictDataSet(dataset);
-exportForVisualization(NN, dataset, "output.csv");
+	//NN->predictDataSet(dataset);
+	exportForVisualization(NN, dataset, "output.csv");
 	//NN->ForwardPropagation();
 
 	//NN->learn();

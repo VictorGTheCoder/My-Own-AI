@@ -1,1 +1,3 @@
+#include <cstdint>
+
 double generateRandomNumber();

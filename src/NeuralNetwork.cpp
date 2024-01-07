@@ -45,6 +45,9 @@ void NeuralNetwork::setInputLayer(std::vector<double> inputs)
 }
 
 void NeuralNetwork::displayNetwork() {
+	std::cout << COLOR_RED << "INPUT LAYER - " << COLOR_RESET;
+	_inputLayer->displayLayer();
+	std::cout << std::endl;
     for (Layer *layer : _layers)
         layer->displayLayer();
 }
@@ -62,97 +65,145 @@ void NeuralNetwork::forwardPropagation() {
         //layer->displayLayer();
         layer->ComputeOutputs();
     }
-
 }
+
+void NeuralNetwork::updateWeightsAndBias(Layer *layer, const std::vector<double> &deltaErrors) {
+    std::cout << COLOR_BLUE << "NEW LAYER UPDATE" << COLOR_RESET << " ";
+	for (std::size_t i = 0; i < layer->getNeurons().size(); i++) {
+		std::cout << "	Update Neuron Weights ";
+        Neuron *neuron = layer->getNeurons()[i];
+        double deltaError = deltaErrors[i];
+
+        // Update weights
+		for (Connection *connection : neuron->getConnections())
+		{
+			double oldWeight = connection->getWeight();
+			double input = connection->fromNeuron->getOutput();
+			double newWeight = oldWeight - _learningRate * input * deltaError;
+			if (newWeight > oldWeight)
+				std::cout << COLOR_GREEN << "+" << newWeight - oldWeight << COLOR_RESET;
+			else
+				std::cout << COLOR_RED << newWeight - oldWeight << COLOR_RESET;
+			std::cout << " ";
+
+			connection->setWeight(newWeight);
+		}
+
+        // Update bias
+        double oldBias = neuron->getBias();
+        double newBias = oldBias - _learningRate * deltaError;
+        neuron->setBias(newBias);
+    }
+	std::cout << std::endl;
+}
+
 
 void NeuralNetwork::backwarPropagation() {
 
-    if (_outputLayer->getNeurons()[0]->getOutput() > _outputLayer->getNeurons()[1]->getOutput())
-    {
-        if (_currentData->expectedOutput[0] == 1)
-            _currentTrainingSuccess++;
-    }
-    else
-    {
-        if (_currentData->expectedOutput[1] == 1)
-            _currentTrainingSuccess++;
-    }
-    std::vector<double> delta_errors;
-    for (std::size_t i = 0; i < _outputLayer->getNeurons().size(); ++i)
-    {
-        double output = _outputLayer->getNeurons()[i]->getOutput();
-        double target = _currentData->expectedOutput[i];
-        double error = output - target;
-        double delta = error * ActivationFunctionSigmoidDerivative(output);
+	std::vector<double> expectedOutput = _currentData->expectedOutput;
+	Layer *currentLayer = _layers.back();
+	std::vector<double> deltaOutputErrors(_outputLayer->getNeurons().size());
 
-        delta_errors.push_back(delta);
-        _outputLayer->getNeurons()[i]->setGradients(delta + _outputLayer->getNeurons()[i]->getGradients());
-    }
+	// Handle the output layer
+	for (std::size_t i = 0; i < currentLayer->getNeurons().size(); i++)
+	{
+		Neuron *currentNeuron = currentLayer->getNeurons()[i];
+		double currentNeuronOutput = currentNeuron->getOutput();
+		double ActivationFunctionDerivative = ActivationFunctionSigmoidDerivative(currentNeuronOutput);
+		deltaOutputErrors[i] = currentNeuronOutput - expectedOutput[i];
+		deltaOutputErrors[i] *= ActivationFunctionDerivative;
+	}
+	updateWeightsAndBias(currentLayer, deltaOutputErrors);
 
-    for (int i = _layers.size() - 2; i >= 0; i--) // start from the last hidden layer
-    {
-        Layer *layer = _layers[i];
-        Layer *nextLayer = _layers[i + 1];
-
-        for (std::size_t j = 0; j < layer->getNeurons().size(); j++)
-        {
-            double sum = 0.0;
-            for (std::size_t k = 0; k < nextLayer->getNeurons().size(); k++)
-            {
-                sum += nextLayer->getNeurons()[k]->getWeights()[j] * nextLayer->getNeurons()[k]->getGradients();
-            }
-
-            double output = layer->getNeurons()[j]->getOutput();
-            double delta = sum * ActivationFunctionSigmoidDerivative(output);
-            layer->getNeurons()[j]->setGradients(delta + layer->getNeurons()[j]->getGradients());
-        }
-    }
+	// Loop over all hidden layer backward
+	for (int layerIndex = _layers.size() - 2; layerIndex >= 0; layerIndex--)
+	{
+		currentLayer = _layers[layerIndex];
+		std::vector<double> deltaHiddenErrors(currentLayer->getNeurons().size());
+		for (std::size_t i = 0; i < currentLayer->getNeurons().size(); i++)
+		{
+			Neuron *currentNeuron = currentLayer->getNeurons()[i];
+			double currentNeuronOutput = currentNeuron->getOutput();
+			double ActivationFunctionDerivative = ActivationFunctionSigmoidDerivative(currentNeuronOutput);
+			double sumDeltaWeight = 0.0;
+			// Sum over all weights between the current neuron and all neuron in the next layer
+			for (std::size_t j = 0; j < _layers[layerIndex + 1]->getNeurons().size(); j++)
+				sumDeltaWeight += _layers[layerIndex + 1]->getNeurons()[j]->getWeights()[i] * deltaOutputErrors[j];
+			deltaHiddenErrors[i] = sumDeltaWeight * ActivationFunctionDerivative;
+		}
+		updateWeightsAndBias(currentLayer, deltaHiddenErrors);
+		deltaOutputErrors = deltaHiddenErrors;
+	}
 }
-
 
 void NeuralNetwork::learn() {
     forwardPropagation();
-    // double cost = DataCost(_currentData, getOutputValues());
-    // std::cout << "Cost " << cost << std::endl;
+
     backwarPropagation();
 }
 
 
 void NeuralNetwork::train() {
-    _currentTrainingSuccess = 0;
-    int numBatches = _dataset.size() / BATCH_SIZE;
+	// _currentData = &(_dataset[0]);
+	// setInputLayer(_currentData->input);
+	// _inputLayer->displayLayer();
+	// learn();
+	for (int epoch = 0; epoch < 1; epoch++)
+	{
+		ShuffleDataset(_dataset);
+		for (Data &data : _dataset)
+		{
+			_currentData = &(data);
+			setInputLayer(_currentData->input);
+			learn();		
+		}
+		predictDataSet(_dataset);
+	}
+
+	forwardPropagation();
+
+    //_currentTrainingSuccess = 0;
+    //int numBatches = _dataset.size() / BATCH_SIZE;
 
     // for (int epoch = 0; epoch < NUM_EPOCHS; epoch++)
     // {
+	// 	totalCost = 0;
+    // // while (true)
+    // // {
+    //     ShuffleDataset(_dataset);
+    //     // for (int batch = 0; batch < numBatches; batch++)
+    //     // {
+    //     //     std::vector<Data> miniBatch = GetMiniBatch(_dataset, batch, BATCH_SIZE);
 
-    while (true)
-    {
-        ShuffleDataset(_dataset);
-        for (int batch = 0; batch < numBatches; batch++)
-        {
-            std::vector<Data> miniBatch = GetMiniBatch(_dataset, batch, BATCH_SIZE);
+    //     //     for (Data &data : miniBatch)
+    //     //     {
+    //     //         // for (double t : data.input)
+    //     //         //     std::cout << t << ", ";
+    //     //         // std::cout << std::endl;
+    //     //         _currentData = &data;
+    //     //         setInputLayer(_currentData->input);
+    //     //         learn();
+    //     //     }
 
-            for (Data &data : miniBatch)
-            {
-                // for (double t : data.input)
-                //     std::cout << t << ", ";
-                // std::cout << std::endl;
-                _currentData = &data;
-                setInputLayer(_currentData->input);
-                learn();
-            }
-            for (Layer *layer : _layers)
-            {
-                layer->updateWeights(-_learningRate / miniBatch.size());
-            }
+    //     //     // for (Layer *layer : _layers)
+    //     //     // {
+    //     //     //     layer->updateWeights(-_learningRate / miniBatch.size());
+    //     //     // }
 
-        }
-        if (_currentTrainingSuccess == (int)_dataset.size())
-        {
-            std::cout << "Success : " << _currentTrainingSuccess << "/" << _dataset.size() << std::endl;
-            break;
-        }
-    }
+	// 	for (Data &data : _dataset)
+	// 	{
+	// 		_currentData = &data;
+	// 		setInputLayer(_currentData->input);
+	// 		learn();
+	// 	}
+
+	// 	std::cout << "Cost : " << totalCost / 100 << std::endl;
+    //     // if (_currentTrainingSuccess == (int)_dataset.size())
+    //     // {
+    //     //     std::cout << "Success : " << _currentTrainingSuccess << "/" << _dataset.size() << std::endl;
+    //     //     break;
+    //     // }
+    // }
 }
 
 
@@ -204,10 +255,13 @@ int NeuralNetwork::predictData(Data data)
 
 void NeuralNetwork::predictDataSet(std::vector<Data> dataset)
 {
+	double totalCost = 0.0;
+
     int success = 0;
     for (Data data : dataset)
     {
-    
+    	double cost = DataCost(&data, getOutputValues());
+		totalCost += cost;
         int r = predictData(data);
         int rr = 0;
         if (data.expectedOutput[0] == 1)
@@ -226,6 +280,7 @@ void NeuralNetwork::predictDataSet(std::vector<Data> dataset)
         }
     }
     std::cout << "Success : " << success << "/" << dataset.size() << std::endl;
+	std::cout << "Avg Cost : " << totalCost / dataset.size() << std::endl;
 }
 
 std::vector<double> NeuralNetwork::getOutputValues()
@@ -233,7 +288,7 @@ std::vector<double> NeuralNetwork::getOutputValues()
     std::vector<double> result;
     for (Neuron *neuron : _outputLayer->getNeurons())
     {
-        result.push_back(neuron->getOutput() * 100);
+        result.push_back(neuron->getOutput());
     }
     return result;
 }

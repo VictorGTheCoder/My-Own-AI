@@ -1,5 +1,6 @@
 #include <random>
 
+
 double generateRandomNumber() {
     // Random number generator
     std::random_device rd;  // Obtain a random number from hardware
@@ -9,5 +10,5 @@ double generateRandomNumber() {
     // Generate and output a random number
     double random_number = distr(gen);
     (void ) random_number;
-    return random_number;
+    return 0.45;
 }
