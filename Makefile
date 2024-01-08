@@ -4,13 +4,13 @@ NAME = NeuralNetwork
 OBJDIR = obj
 
 # Sources
-SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp ActivationFunction.cpp utils.cpp Data.cpp Cost.cpp)
+SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp ActivationFunction.cpp utils.cpp Data.cpp Cost.cpp Draw.cpp)
 
 # Object files
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
 
 # Compiler flags
-CFLAGS = -g -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Werror 
 CC = g++
 RM = rm -f
 
@@ -24,7 +24,7 @@ $(OBJDIR)/%.o: src/%.cpp | create_obj_dir
 
 # Rule for the final executable
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -fsanitize=address -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJS) -fsanitize=address -o $(NAME) -lsfml-graphics -lsfml-window -lsfml-system -I include/json/include/
 
 # Standard rules
 all: $(NAME)

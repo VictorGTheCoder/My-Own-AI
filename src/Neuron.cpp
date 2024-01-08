@@ -69,3 +69,12 @@ std::vector<double> Neuron::getWeights() const {
 	}
 	return weights;
 }
+
+
+void Neuron::setWeights(std::vector<double> weights)
+{
+	for (std::size_t i = 0; i < _connections.size(); i++)
+	{
+		_connections[i]->setWeight(weights[i]);
+	}
+}

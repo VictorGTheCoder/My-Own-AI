@@ -32,6 +32,7 @@ class Neuron
 		double getGradients() const;
 
 		std::vector<double> getWeights() const;
+		void setWeights(std::vector<double>);
 
 		void updateWeights(double learningRate);
 		void setConnection(Neuron* neuron);

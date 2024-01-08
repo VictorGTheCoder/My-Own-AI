@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <random>
 #include <chrono> 
+#include <fstream>
+#include <iostream>
+#include "json.hpp"
 #include "../include/Layer.hpp"
 #include "../include/Color.hpp"
 #include "../include/Cost.hpp"
@@ -44,6 +47,9 @@ class NeuralNetwork
 
         void ShuffleDataset(std::vector<Data> &dataset);
         void updateDataset();
+
+        void saveModel(const std::string& filename);
+        void loadModel(const std::string& filename);
 
 
     private:

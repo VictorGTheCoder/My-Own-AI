@@ -331,3 +331,63 @@ void NeuralNetwork::updateDataset()
     //     _dataset[i].calculatedOutput = calculatedOutputs;
     // }
 }
+
+void NeuralNetwork::saveModel(const std::string& filename) {
+    nlohmann::json modelJson;
+
+    // Save layer sizes
+    modelJson["layerSizes"] = _layerSizes;
+
+    // Save connections (weights and biases)
+    std::vector<nlohmann::json> connections;
+    for (Layer* layer : _layers) {
+        for (Neuron *neuron : layer->getNeurons()) {
+            nlohmann::json neuronJson;
+            neuronJson["weights"] = neuron->getWeights();
+            neuronJson["bias"] = neuron->getBias();
+            connections.push_back(neuronJson);
+        }
+    }
+    
+    modelJson["connections"] = connections;
+
+    // Write JSON to file
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        return;
+    }
+    
+    file << modelJson.dump(4); // 4 is for pretty printing
+    
+    file.close();
+}
+
+
+void NeuralNetwork::loadModel(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file for reading: " << filename << std::endl;
+        return;
+    }
+
+    nlohmann::json modelJson;
+    file >> modelJson;
+    file.close();
+
+
+    // Assuming the layer sizes are consistent with the existing network
+    std::size_t neuronIndex = 0;
+    for (Layer* layer : _layers) {
+        for (Neuron* neuron : layer->getNeurons()) {
+            if (neuronIndex < modelJson["connections"].size()) {
+                nlohmann::json neuronJson = modelJson["connections"][neuronIndex];
+                neuron->setWeights(neuronJson["weights"].get<std::vector<double>>());
+                neuron->setBias(neuronJson["bias"].get<double>());
+                neuronIndex++;
+            }
+        }
+    }
+}
+
+
