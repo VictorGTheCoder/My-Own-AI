@@ -39,7 +39,10 @@ void exportForVisualization(NeuralNetwork* NN, const std::vector<Data>& dataset,
 int main()
 {
 
-	//drawWindow();
+	NeuralNetwork *NN = new NeuralNetwork();
+	NN->loadModel("rightPetaDataBase.json");
+
+	drawWindow(NN);
 
 	std::vector<Data> dataset = createDataSet();
 
@@ -64,28 +67,23 @@ int main()
 
 	// (void ) dataset2;
 
-	std::vector<int> t({3, 10});
+	std::vector<int> t({2, 3, 2});
 	// //std::vector<double> inputs({1, 1});
 
-	NeuralNetwork *NN = new NeuralNetwork(t);
 
-	NN->createNetwork(dataset);
+	//NN->loadModel("PetalModel2.json");
 
-
-	// NN->displayNetwork();
+	//NN->displayNetwork();
 
 
 	// //NN->predictDataSet(dataset);
 	// //NN->predictData(data);
-
-	//NN->train();
-
-
+	//NN->train(dataset);
 
 	//NN->saveModel("PetalModel2.json");
 	//NN->displayNetwork();
-	NN->loadModel("PetalModel2.json");
-	NN->displayNetwork();
+	//NN->loadModel("PetalModel2.json");
+	//NN->displayNetwork();
 	// //NN->predictData(data);
 	// //NN->predictDataSet(dataset);
 	// exportForVisualization(NN, dataset, "output.csv");
@@ -96,6 +94,6 @@ int main()
 	// //NN->displayLastLayer();
 	// //NN->displayNetwork();
 
-	delete NN;
+	//delete NN;
 	return 0;
 }

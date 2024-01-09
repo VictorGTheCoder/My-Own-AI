@@ -37,21 +37,35 @@ std::vector<Neuron *> Layer::getNeurons() const {return _Neurons;}
 
 int Layer::getSize() const {return _size;}
 
-
-
 void Layer::ComputeOutputs() {
 	for (Neuron *neuron : _Neurons)
 	{
 		neuron->computeOutput();
+		neuron->setOutput(this->ActivationFunction(neuron->getOutput()));
+		
 	}
 }
 
-void Layer::updateWeights(double learningRate)
+void Layer::setActivationFunction(LayerActivationFunction activationFunction, LayerActivationFunctionDerivative activationFunctionDerivative) {
+	_activationFunction = activationFunction;
+	_activationFunctionDerivative = activationFunctionDerivative;
+}
+
+double Layer::ActivationFunction(double input)
 {
-	for (Neuron* neuron : _Neurons)
-	{
-		
-		neuron->updateWeights(learningRate);
-	}
+	if (_activationFunction)
+		return (_activationFunction(input));
+	else
+		std::cerr << COLOR_RED << "Activation function not set" << std::endl;
+	return input;
+}
+
+double Layer::ActivationFunctionDerivative(double input)
+{
+	if (_activationFunctionDerivative)
+		return (_activationFunctionDerivative(input));
+	else
+		std::cerr << COLOR_RED << "Activation function not set" << std::endl;
+	return input;
 }
 

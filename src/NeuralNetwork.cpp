@@ -2,12 +2,9 @@
 
 
 
-NeuralNetwork::NeuralNetwork(const std::vector<int>& layerSizes) : _layerSizes(layerSizes){
-    std::cout << "NeuralNetwork constructor called : ";
+NeuralNetwork::NeuralNetwork(){
+    std::cout << "NeuralNetwork constructor called : " << std::endl;
     _learningRate = 0.1;
-    for (int t : _layerSizes)
-        std::cout << t << " ";
-    std::cout << std::endl;
 }
 
 NeuralNetwork::~NeuralNetwork() {
@@ -17,19 +14,19 @@ NeuralNetwork::~NeuralNetwork() {
     //std::cout << "NeuralNetwork destructor called" << std::endl;
 }
 
-void NeuralNetwork::createNetwork(std::vector<Data> dataset) {
-    _dataset = dataset;
-    std::vector<double> inputs = _dataset[0].input;
-    _inputs = inputs;
-    _inputLayer = new Layer(inputs.size());
-    setInputLayer(_inputs);
-    for (std::size_t i = 0; i < _layerSizes.size(); ++i) {
-        _layers.emplace_back(new Layer(_layerSizes[i]));
+void NeuralNetwork::createNetwork(const std::vector<int>& layerSizes) {
+    _layerSizes = layerSizes;
+    _inputLayer = new Layer(layerSizes[0]);
+    for (std::size_t i = 0; i < _layerSizes.size() - 1; ++i) {
+        std::cout << "create layer " << i + 1 << " of size " << _layerSizes[i] << std::endl;
+        _layers.emplace_back(new Layer(_layerSizes[i + 1]));
         if (i > 0)
             _layers[i]->setConnections(_layers[i - 1]);
         else
             _layers[i]->setConnections(_inputLayer);
     }
+    _layers[0]->setActivationFunction(ActivationFunctionReLU, ActivationFunctionReLUDerivative);
+    _layers[1]->setActivationFunction(ActivationFunctionReLU, ActivationFunctionReLUDerivative);
     forwardPropagation();
     _outputLayer = _layers[_layers.size() - 1];
 
@@ -109,7 +106,7 @@ void NeuralNetwork::backwarPropagation() {
 	{
 		Neuron *currentNeuron = currentLayer->getNeurons()[i];
 		double currentNeuronOutput = currentNeuron->getOutput();
-		double ActivationFunctionDerivative = ActivationFunctionSigmoidDerivative(currentNeuronOutput);
+		double ActivationFunctionDerivative = currentLayer->ActivationFunctionDerivative(currentNeuronOutput);
 		deltaOutputErrors[i] = currentNeuronOutput - expectedOutput[i];
 		deltaOutputErrors[i] *= ActivationFunctionDerivative;
 	}
@@ -124,7 +121,7 @@ void NeuralNetwork::backwarPropagation() {
 		{
 			Neuron *currentNeuron = currentLayer->getNeurons()[i];
 			double currentNeuronOutput = currentNeuron->getOutput();
-			double ActivationFunctionDerivative = ActivationFunctionSigmoidDerivative(currentNeuronOutput);
+			double ActivationFunctionDerivative = currentLayer->ActivationFunctionDerivative(currentNeuronOutput);
 			double sumDeltaWeight = 0.0;
 			// Sum over all weights between the current neuron and all neuron in the next layer
 			for (std::size_t j = 0; j < _layers[layerIndex + 1]->getNeurons().size(); j++)
@@ -143,11 +140,12 @@ void NeuralNetwork::learn() {
 }
 
 
-void NeuralNetwork::train() {
+void NeuralNetwork::train(std::vector<Data> &dataset) {
 	// _currentData = &(_dataset[0]);
 	// setInputLayer(_currentData->input);
 	// _inputLayer->displayLayer();
 	// learn();
+    _dataset = dataset;
 	for (int epoch = 0; epoch < 1; epoch++)
 	{
 		ShuffleDataset(_dataset);
@@ -207,26 +205,45 @@ void NeuralNetwork::train() {
 }
 
 
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
 int NeuralNetwork::predict(std::vector<double> inputs) {
     setInputLayer(inputs);
     forwardPropagation();
+
     std::vector<double> calculatedOutputs;
-    for (Neuron *neuron : _outputLayer->getNeurons())
-    {
+    for (Neuron *neuron : _outputLayer->getNeurons()) {
         calculatedOutputs.push_back(neuron->getOutput());
     }
-    // for (double t : calculatedOutputs)
-    //     std::cout << t << ", ";
-    // std::cout << std::endl;
-    if (calculatedOutputs[0] > calculatedOutputs[1])
-        return (1);
-    else 
-        return (2);
-    // else if (calculatedOutputs[1] > calculatedOutputs[0] && calculatedOutputs[1] > calculatedOutputs[2])
-    //     return (2);
-    // else
-    //     return (3);
+
+    // Find the index of the neuron with the highest output
+    int maxIndex = std::distance(calculatedOutputs.begin(), 
+                                 std::max_element(calculatedOutputs.begin(), calculatedOutputs.end()));
+
+    // Create a vector of pairs to store the probability and its corresponding index
+    std::vector<std::pair<double, int>> outputWithIndex;
+    for (size_t i = 0; i < calculatedOutputs.size(); ++i) {
+        outputWithIndex.emplace_back(calculatedOutputs[i], i);
+    }
+
+    // Sort the vector in descending order based on the probability
+    std::sort(outputWithIndex.begin(), outputWithIndex.end(), 
+              [](const std::pair<double, int>& a, const std::pair<double, int>& b) {
+                  return a.first > b.first;
+              });
+
+    // Print probabilities in order
+    std::cout << "Probabilities in order:" << std::endl;
+    for (const auto& pair : outputWithIndex) {
+        std::cout << "Node " << pair.second << ": " << pair.first << std::endl;
+    }
+
+    // Return the index of the neuron with the highest output (plus 1 if you want to start counting from 1)
+    return maxIndex + 1;
 }
+
 
 int NeuralNetwork::predictData(Data data)
 {
@@ -341,6 +358,8 @@ void NeuralNetwork::saveModel(const std::string& filename) {
     // Save connections (weights and biases)
     std::vector<nlohmann::json> connections;
     for (Layer* layer : _layers) {
+        if (layer == _inputLayer)
+            continue;
         for (Neuron *neuron : layer->getNeurons()) {
             nlohmann::json neuronJson;
             neuronJson["weights"] = neuron->getWeights();
@@ -364,21 +383,28 @@ void NeuralNetwork::saveModel(const std::string& filename) {
 }
 
 
+
 void NeuralNetwork::loadModel(const std::string& filename) {
+
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error opening file for reading: " << filename << std::endl;
         return;
     }
 
+
     nlohmann::json modelJson;
     file >> modelJson;
     file.close();
 
+    std::vector<int> layers_size = modelJson["layerSizes"]; 
+    createNetwork(layers_size);
 
     // Assuming the layer sizes are consistent with the existing network
     std::size_t neuronIndex = 0;
+    std::cout << "numbers of nodes " << modelJson["connections"].size() << std::endl;;
     for (Layer* layer : _layers) {
+        std::cout << "Processing Layer" << std::endl;
         for (Neuron* neuron : layer->getNeurons()) {
             if (neuronIndex < modelJson["connections"].size()) {
                 nlohmann::json neuronJson = modelJson["connections"][neuronIndex];
@@ -389,5 +415,6 @@ void NeuralNetwork::loadModel(const std::string& filename) {
         }
     }
 }
+
 
 

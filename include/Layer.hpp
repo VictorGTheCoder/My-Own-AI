@@ -3,14 +3,21 @@
 
 #include <vector>
 #include <memory>
-
+#include "ActivationFunction.hpp"
 #include "../include/Neuron.hpp"
+#include "Color.hpp"
+
+using LayerActivationFunction = double(*)(double);
+using LayerActivationFunctionDerivative = double(*)(double);
 
 class Layer
 {
     private:
         std::vector<Neuron *> _Neurons;
+        std::vector<double>  _weights;
         int _size; // Layer size
+        LayerActivationFunction _activationFunction;
+        LayerActivationFunctionDerivative _activationFunctionDerivative;
 
     public:
         Layer(int numberOfNeurons);
@@ -23,8 +30,14 @@ class Layer
         std::vector<Neuron *> getNeurons() const;
         int getSize() const;
 
+        void setActivationFunction(LayerActivationFunction activationFunction, LayerActivationFunctionDerivative activationFunctionDerivative);
 
-        void updateWeights(double learningRate);
+        double ActivationFunction(double input);
+        double ActivationFunctionDerivative(double input);
+
+
+
+
         // void setNeurons(std::vector<Neuron *> neurons);
         // void setSize(int size);
 

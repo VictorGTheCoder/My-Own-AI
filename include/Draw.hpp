@@ -3,5 +3,6 @@
 #include <vector>
 #include <thread>
 
+class NeuralNetwork;
 
-int drawWindow();
+int drawWindow(NeuralNetwork *NN);

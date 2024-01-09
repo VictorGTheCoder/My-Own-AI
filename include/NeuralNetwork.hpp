@@ -19,17 +19,17 @@
 class NeuralNetwork
 {
     public:
-        NeuralNetwork(const std::vector<int>& layerSizes);
+        NeuralNetwork();
         ~NeuralNetwork();
         
-        void createNetwork(std::vector<Data> dataset);
+        void createNetwork(const std::vector<int>& layerSizes);
         void setInputLayer(std::vector<double> inputs);
 
         void forwardPropagation();
         void backwarPropagation();
 
         void learn();
-        void train();
+        void train(std::vector<Data> &dataset);
 
         int predict(std::vector<double> inputs);
         int predictData(Data data);

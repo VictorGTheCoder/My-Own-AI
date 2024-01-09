@@ -1,8 +1,8 @@
 #include "../include/Draw.hpp"
 #include "../include/NeuralNetwork.hpp"
 
-const int WINDOW_SIZE = 625;
-const int GRID_SIZE = 25;
+const int WINDOW_SIZE = 784;
+const int GRID_SIZE = 28;
 const int PIXEL_SIZE = WINDOW_SIZE / GRID_SIZE; // Each "pixel" is a 40x40 block
 
 // Represents the drawing grid
@@ -39,7 +39,7 @@ void GetGridState() {
     }
 }
 
-void preProcessEvaluatingDigit()
+void preProcessEvaluatingDigit(NeuralNetwork *NN)
 {
     std::vector<double> image;
     for (std::vector<bool> v : drawingGrid)
@@ -52,21 +52,22 @@ void preProcessEvaluatingDigit()
                 image.push_back(0.0);
         }
     }
-    std::vector<int> t({20,10});
+    // std::vector<int> t({20,10});
     
-    NeuralNetwork *NN = new NeuralNetwork(t);
+    // NeuralNetwork *NN = new NeuralNetwork();
 
-    std::vector<Data> d;
-    Data data;
-    data.input = image;
-    d.push_back(data);
+	//std::vector<double> inputlayer = {2,3};
 
-    NN->createNetwork(d);
+	//NN->setInputLayer(inputlayer);
+	//NN->createNetwork(t);
+
+    // NN->createNetwork(t);
 
     NN->predict(image);
+
 }
 
-int drawWindow() {
+int drawWindow(NeuralNetwork *NN) {
     sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE, WINDOW_SIZE), "SFML Drawing App");
 
     bool mouseButtonDown = false;
@@ -88,13 +89,19 @@ int drawWindow() {
                 mouseButtonDown = false;
                 modif = true;
                 GetGridState();
-                std::thread nnThread(preProcessEvaluatingDigit);
+                std::thread nnThread(preProcessEvaluatingDigit, NN);
                 nnThread.detach();
             }
             if (event.type == sf::Event::MouseMoved && mouseButtonDown) {
                 modif = true;
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 DrawGridPixel(window, mousePos.x / PIXEL_SIZE, mousePos.y / PIXEL_SIZE);
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+                for (int i = 0; i < GRID_SIZE; ++i)
+                    for (int j = 0; j < GRID_SIZE; ++j)
+                        drawingGrid[i][j] = 0;
+                modif = true;
             }
         }
 

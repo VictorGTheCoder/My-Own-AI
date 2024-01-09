@@ -40,26 +40,8 @@ void Neuron::computeOutput() {
 		temp += connection->computeConnection();
 	}
 	temp += _bias;
-	_output = ActivationFunctionSigmoid(temp);
+	_output = temp;
 	//std::cout << "Output = " << _output << std::endl;
-}
-
-
-void Neuron::setGradients(double value) {
-    _gradients = value;
-}
-
-double Neuron::getGradients() const {
-    return _gradients;
-}
-
-void Neuron::updateWeights(double learningRate) {
-    for (Connection *connection : _connections) {
-        double newWeight = connection->getWeight() - learningRate * _gradients * connection->fromNeuron->getOutput();
-        connection->setWeight(newWeight);
-    }
-    _bias -= learningRate * _gradients;
-	_gradients = 0.0;
 }
 
 std::vector<double> Neuron::getWeights() const {
@@ -71,8 +53,14 @@ std::vector<double> Neuron::getWeights() const {
 }
 
 
+void printVector(std::vector<double> vector)
+{
+	for (double v : vector)
+		std::cout << v << ", " << std::endl;
+}
 void Neuron::setWeights(std::vector<double> weights)
 {
+	//printVector(weights);
 	for (std::size_t i = 0; i < _connections.size(); i++)
 	{
 		_connections[i]->setWeight(weights[i]);
