@@ -2,7 +2,7 @@
 
 
 
-NeuralNetwork::NeuralNetwork(){
+NeuralNetwork:: NeuralNetwork(){
     std::cout << "NeuralNetwork constructor called : " << std::endl;
     _learningRate = 0.1;
 }
@@ -27,6 +27,7 @@ void NeuralNetwork::createNetwork(const std::vector<int>& layerSizes) {
     }
     _layers[0]->setActivationFunction(ActivationFunctionReLU, ActivationFunctionReLUDerivative);
     _layers[1]->setActivationFunction(ActivationFunctionReLU, ActivationFunctionReLUDerivative);
+    //_layers[1]->setActivationFunction(ActivationFunctionSoftmax, ActivationFunctionSoftmaxDerivative);
     forwardPropagation();
     _outputLayer = _layers[_layers.size() - 1];
 
@@ -35,10 +36,14 @@ void NeuralNetwork::createNetwork(const std::vector<int>& layerSizes) {
 
 void NeuralNetwork::setInputLayer(std::vector<double> inputs)
 {
+
     for (std::size_t i = 0; i < inputs.size(); ++i)
     {
         _inputLayer->getNeurons()[i]->setOutput(inputs[i]);
     }
+
+    
+
 }
 
 void NeuralNetwork::displayNetwork() {
@@ -65,9 +70,9 @@ void NeuralNetwork::forwardPropagation() {
 }
 
 void NeuralNetwork::updateWeightsAndBias(Layer *layer, const std::vector<double> &deltaErrors) {
-    std::cout << COLOR_BLUE << "NEW LAYER UPDATE" << COLOR_RESET << " ";
+    // std::cout << COLOR_BLUE << "NEW LAYER UPDATE" << COLOR_RESET << " ";
 	for (std::size_t i = 0; i < layer->getNeurons().size(); i++) {
-		std::cout << "	Update Neuron Weights ";
+		// std::cout << "	Update Neuron Weights ";
         Neuron *neuron = layer->getNeurons()[i];
         double deltaError = deltaErrors[i];
 
@@ -77,11 +82,11 @@ void NeuralNetwork::updateWeightsAndBias(Layer *layer, const std::vector<double>
 			double oldWeight = connection->getWeight();
 			double input = connection->fromNeuron->getOutput();
 			double newWeight = oldWeight - _learningRate * input * deltaError;
-			if (newWeight > oldWeight)
-				std::cout << COLOR_GREEN << "+" << newWeight - oldWeight << COLOR_RESET;
-			else
-				std::cout << COLOR_RED << newWeight - oldWeight << COLOR_RESET;
-			std::cout << " ";
+			// if (newWeight > oldWeight)
+			// 	std::cout << COLOR_GREEN << "+" << newWeight - oldWeight << COLOR_RESET;
+			// else
+			// 	std::cout << COLOR_RED << newWeight - oldWeight << COLOR_RESET;
+			// std::cout << " ";
 
 			connection->setWeight(newWeight);
 		}
@@ -91,7 +96,7 @@ void NeuralNetwork::updateWeightsAndBias(Layer *layer, const std::vector<double>
         double newBias = oldBias - _learningRate * deltaError;
         neuron->setBias(newBias);
     }
-	std::cout << std::endl;
+	// std::cout << std::endl;
 }
 
 
@@ -102,14 +107,31 @@ void NeuralNetwork::backwarPropagation() {
 	std::vector<double> deltaOutputErrors(_outputLayer->getNeurons().size());
 
 	// Handle the output layer
-	for (std::size_t i = 0; i < currentLayer->getNeurons().size(); i++)
+	// for (std::size_t i = 0; i < currentLayer->getNeurons().size(); i++)
+	// {
+	// 	Neuron *currentNeuron = currentLayer->getNeurons()[i];
+	// 	double currentNeuronOutput = currentNeuron->getOutput();
+	// 	double ActivationFunctionDerivative = currentLayer->ActivationFunctionDerivative(currentNeuronOutput);
+	// 	deltaOutputErrors[i] = currentNeuronOutput - expectedOutput[i];
+	// 	deltaOutputErrors[i] *= ActivationFunctionDerivative;
+	// }
+	// updateWeightsAndBias(currentLayer, deltaOutputErrors);
+
+
+    // Handle the output layer
+    std::size_t indexMax = currentLayer->getNeurons().size();
+    std::vector<double> NeuronOutputs(indexMax);
+	for (std::size_t i = 0; i < indexMax; i++)
 	{
 		Neuron *currentNeuron = currentLayer->getNeurons()[i];
-		double currentNeuronOutput = currentNeuron->getOutput();
-		double ActivationFunctionDerivative = currentLayer->ActivationFunctionDerivative(currentNeuronOutput);
-		deltaOutputErrors[i] = currentNeuronOutput - expectedOutput[i];
-		deltaOutputErrors[i] *= ActivationFunctionDerivative;
+		NeuronOutputs[i] = currentNeuron->getOutput();
 	}
+    for (std::size_t i = 0; i < indexMax; i++)
+    {
+	    double ActivationFunctionDerivative = ActivationFunctionSoftmax(NeuronOutputs ,i);
+        deltaOutputErrors[i] = NeuronOutputs[i] - expectedOutput[i];
+		deltaOutputErrors[i] *= ActivationFunctionDerivative;
+    }
 	updateWeightsAndBias(currentLayer, deltaOutputErrors);
 
 	// Loop over all hidden layer backward
@@ -117,7 +139,8 @@ void NeuralNetwork::backwarPropagation() {
 	{
 		currentLayer = _layers[layerIndex];
 		std::vector<double> deltaHiddenErrors(currentLayer->getNeurons().size());
-		for (std::size_t i = 0; i < currentLayer->getNeurons().size(); i++)
+        std::vector<Neuron *> neurons = currentLayer->getNeurons();
+		for (std::size_t i = 0; i < neurons.size(); i++)
 		{
 			Neuron *currentNeuron = currentLayer->getNeurons()[i];
 			double currentNeuronOutput = currentNeuron->getOutput();
@@ -141,6 +164,9 @@ void NeuralNetwork::learn() {
 
 
 void NeuralNetwork::train(std::vector<Data> &dataset) {
+    std::size_t count = 0;
+    std::size_t maxCount = dataset.size();
+    int percentage = -1;
 	// _currentData = &(_dataset[0]);
 	// setInputLayer(_currentData->input);
 	// _inputLayer->displayLayer();
@@ -148,12 +174,26 @@ void NeuralNetwork::train(std::vector<Data> &dataset) {
     _dataset = dataset;
 	for (int epoch = 0; epoch < 1; epoch++)
 	{
+        std::cout << "EPOCH : " << epoch + 1 << "/" << "1" << std::endl;
 		ShuffleDataset(_dataset);
 		for (Data &data : _dataset)
 		{
 			_currentData = &(data);
-			setInputLayer(_currentData->input);
-			learn();		
+            try {
+                setInputLayer(_currentData->input);
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << COLOR_RED << "[ERROR] " << COLOR_RESET << e.what() << "Have you create the networks" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+			learn();
+            if (static_cast<int>((count * 100) / maxCount ) != percentage)
+            {
+                percentage = static_cast<int>((count * 100) / maxCount);
+                std::cout << percentage << "%\r" << std::flush;
+            }
+            count++;
 		}
 		predictDataSet(_dataset);
 	}

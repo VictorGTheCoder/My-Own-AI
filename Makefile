@@ -1,25 +1,18 @@
 NAME = NeuralNetwork
 
-# Directory for object files
-OBJDIR = obj
-
 # Sources
-SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp ActivationFunction.cpp utils.cpp Data.cpp Cost.cpp Draw.cpp)
+SRCS = $(addprefix src/, main.cpp NeuralNetwork.cpp Layer.cpp Neuron.cpp Connection.cpp ActivationFunction.cpp utils.cpp Data.cpp Cost.cpp Draw.cpp MNIST.cpp)
 
-# Object files
-OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
+# Object files - compiled objects will be in the same directory as the sources
+OBJS = $(SRCS:.cpp=.o)
 
 # Compiler flags
 CFLAGS = -g -Wall -Wextra -Werror 
 CC = g++
 RM = rm -f
 
-# Create object directory if it does not exist
-create_obj_dir:
-	@mkdir -p $(OBJDIR)
-
 # Rule for object files
-$(OBJDIR)/%.o: src/%.cpp | create_obj_dir
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule for the final executable
@@ -30,11 +23,11 @@ $(NAME): $(OBJS)
 all: $(NAME)
 
 clean:
-	$(RM) -r $(OBJDIR)
+	$(RM) $(SRCS:.cpp=.o)
 
 fclean: clean
 	$(RM) $(NAME)
 
 re: fclean all
 
-.PHONY: all clean fclean re create_obj_dir
+.PHONY: all clean fclean re

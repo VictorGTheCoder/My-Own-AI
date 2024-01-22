@@ -1,8 +1,12 @@
 #include "../include/NeuralNetwork.hpp"
 #include "../include/Draw.hpp"
+#include "../include/MNIST.hpp"
 #include <fstream>
 #include <vector>
 // Other necessary includes
+
+
+using std::cout, std::endl;
 
 void exportForVisualization(NeuralNetwork* NN, const std::vector<Data>& dataset, const std::string& filename) {
     std::ofstream file(filename);
@@ -36,15 +40,57 @@ void exportForVisualization(NeuralNetwork* NN, const std::vector<Data>& dataset,
 }
 
 
+
+
 int main()
 {
 
+	std::vector<std::vector<unsigned char>> images;
+	std::vector<unsigned char> labels;
+	
+	read_mnist_images("/home/victo/Desktop/My-Own-AI/train-images.idx3-ubyte", images);
+	read_mnist_labels("/home/victo/Desktop/My-Own-AI/train-labels.idx1-ubyte", labels);
+
+
+	cout << "Number of labels: " << images.size() << endl;
+	cout << "Number of labels: " << labels.size() << endl;
+
+    // Example: Accessing the label of the first image
+    if (!labels.empty()) {
+        cout << "Label of the first image: " << static_cast<int>(labels[0]) << endl;
+    }
+
+
+	std::vector<Data> dataset = create_mnist_dataset(images, labels);
+	
+	
 	NeuralNetwork *NN = new NeuralNetwork();
-	NN->loadModel("rightPetaDataBase.json");
+	std::vector NetworkSize = {static_cast<int>(dataset[0].input.size()), 20, 10};
+	NN->createNetwork(NetworkSize);
+	// NN->loadModel("rightPetaDataBase.json");
 
-	drawWindow(NN);
+	NN->train(dataset);
 
-	std::vector<Data> dataset = createDataSet();
+	NN->predict(dataset[0].input);
+	NN->saveModel("myTest.json");
+	// if (dataset[0].input == dataset[109].input)
+	// 	cout << COLOR_RED << "errro dataset" << endl;
+
+	// if (images[0] == images[100])
+	// 	cout << COLOR_RED << "errro image" << endl;
+
+	// drawWindow(NN);
+
+	// cout << static_cast<int>(labels[0]) << endl;
+	// NN->predict(dataset[0].input);
+
+	// cout << static_cast<int>(labels[1]) << endl;
+	// NN->predict(dataset[1].input);
+
+	// cout << static_cast<int>(labels[100]) << endl;
+	// NN->predict(dataset[100].input);
+
+	// std::vector<Data> dataset = createDataSet();
 
 	// std::vector<Data> dataset2 = createDataSet();
 
@@ -67,7 +113,7 @@ int main()
 
 	// (void ) dataset2;
 
-	std::vector<int> t({2, 3, 2});
+	// std::vector<int> t({2, 3, 2});
 	// //std::vector<double> inputs({1, 1});
 
 
@@ -94,6 +140,6 @@ int main()
 	// //NN->displayLastLayer();
 	// //NN->displayNetwork();
 
-	//delete NN;
+	delete NN;
 	return 0;
 }
